@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Content Moderation System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', system-ui, sans-serif;
+            background: linear-gradient(135deg, #0f0f1e 0%, #1a1a2e 50%, #16213e 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #e0e0e0;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding-top: 40px;
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .logo-icon {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            box-shadow: 0 4px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        h1 {
+            font-size: 32px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: -0.5px;
+        }
+
+        .tagline {
+            color: #a0a0a0;
+            font-size: 14px;
+            margin-top: 8px;
+            font-weight: 400;
+        }
+
+        .ai-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(102, 126, 234, 0.15);
+            border: 1px solid rgba(102, 126, 234, 0.3);
+            color: #8b9eff;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-top: 12px;
+        }
+
+        .main-card {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(20px);
+            border-radius: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        }
+
+        .status-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px 20px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .status-connected {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            color: #34d399;
+        }
+
+        .status-disconnected {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #f87171;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .pulse-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: currentColor;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .input-group {
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 12px;
+            color: #c0c0c0;
+            font-weight: 600;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        textarea {
+            width: 100%;
+            padding: 18px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            font-size: 15px;
+            font-family: inherit;
+            color: #e0e0e0;
+            resize: vertical;
+            min-height: 140px;
+            transition: all 0.3s ease;
+            line-height: 1.6;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            background: rgba(255, 255, 255, 0.08);
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        textarea::placeholder {
+            color: #606060;
+        }
+
+        .button-row {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 12px;
+            margin-bottom: 30px;
+        }
+
+        button {
+            padding: 16px 28px;
+            border: none;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 25px rgba(102, 126, 234, 0.5);
+        }
+
+        .btn-primary:active:not(:disabled) {
+            transform: translateY(0);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.05);
+            color: #c0c0c0;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .loading-state {
+            text-align: center;
+            padding: 40px;
+            display: none;
+        }
+
+        .spinner {
+            width: 48px;
+            height: 48px;
+            border: 4px solid rgba(102, 126, 234, 0.2);
+            border-top-color: #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            color: #a0a0a0;
+            font-size: 14px;
+        }
+
+        .results-container {
+            display: none;
+            animation: slideUp 0.4s ease;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .result-card {
+            padding: 28px;
+            border-radius: 16px;
+            margin-bottom: 20px;
+            border: 1px solid;
+        }
+
+        .result-safe {
+            background: rgba(16, 185, 129, 0.08);
+            border-color: rgba(16, 185, 129, 0.3);
+        }
+
+        .result-warning {
+            background: rgba(245, 158, 11, 0.08);
+            border-color: rgba(245, 158, 11, 0.3);
+        }
+
+        .result-danger {
+            background: rgba(239, 68, 68, 0.08);
+            border-color: rgba(239, 68, 68, 0.3);
+        }
+
+        .result-header {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .result-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+
+        .result-safe .result-icon {
+            background: rgba(16, 185, 129, 0.15);
+        }
+
+        .result-warning .result-icon {
+            background: rgba(245, 158, 11, 0.15);
+        }
+
+        .result-danger .result-icon {
+            background: rgba(239, 68, 68, 0.15);
+        }
+
+        .result-title {
+            flex: 1;
+        }
+
+        .result-title h2 {
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .result-safe h2 { color: #34d399; }
+        .result-warning h2 { color: #fbbf24; }
+        .result-danger h2 { color: #f87171; }
+
+        .result-subtitle {
+            font-size: 13px;
+            color: #a0a0a0;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .metric-item {
+            background: rgba(255, 255, 255, 0.03);
+            padding: 16px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .metric-label {
+            font-size: 12px;
+            color: #808080;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+
+        .metric-value {
+            font-size: 20px;
+            font-weight: 700;
+            color: #e0e0e0;
+        }
+
+        .ai-section {
+            background: rgba(102, 126, 234, 0.08);
+            border: 1px solid rgba(102, 126, 234, 0.2);
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .ai-section h3 {
+            font-size: 15px;
+            font-weight: 700;
+            color: #8b9eff;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .ai-explanation {
+            color: #c0c0c0;
+            line-height: 1.7;
+            margin-bottom: 16px;
+            font-size: 14px;
+        }
+
+        .category-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .chip {
+            background: rgba(102, 126, 234, 0.15);
+            color: #8b9eff;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            border: 1px solid rgba(102, 126, 234, 0.3);
+        }
+
+        .flagged-section {
+            margin-top: 20px;
+            padding: 20px;
+            background: rgba(239, 68, 68, 0.05);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            border-radius: 12px;
+        }
+
+        .flagged-section h3 {
+            font-size: 15px;
+            font-weight: 700;
+            color: #f87171;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .word-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(239, 68, 68, 0.1);
+            color: #f87171;
+            padding: 6px 14px;
+            border-radius: 20px;
+            margin: 4px 4px 4px 0;
+            font-size: 13px;
+            font-weight: 600;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-top: 24px;
+        }
+
+        .stat-box {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 32px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 8px;
+        }
+
+        .stat-label {
+            font-size: 11px;
+            color: #808080;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .error-card {
+            background: rgba(239, 68, 68, 0.08);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #f87171;
+            padding: 20px;
+            border-radius: 12px;
+            margin-top: 20px;
+        }
+
+        .error-card strong {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 15px;
+        }
+
+        @media (max-width: 768px) {
+            .main-card {
+                padding: 24px;
+            }
+
+            .stats-row {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .button-row {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo-section">
+                <div class="logo-icon">🛡️</div>
+                <h1>AI-Powered Abusive Language Detector</h1>
+            </div>
+            <p class="tagline">Enterprise-grade AI-powered content analysis and safety detection</p>
+            <div class="ai-badge">
+                <span>⚡</span>
+                <span>Powered by Advanced ML</span>
+            </div>
+        </div>
+
+        <div class="main-card">
+            <div id="statusBar" class="status-bar"></div>
+
+            <div class="input-group">
+                <label for="textInput">Content Analysis</label>
+                <textarea 
+                    id="textInput" 
+                    placeholder="Enter text content for comprehensive AI-powered safety analysis..."
+                ></textarea>
+            </div>
+
+            <div class="button-row">
+                <button class="btn-primary" id="analyzeBtn" onclick="analyzeText()">
+                    <span>🔍</span>
+                    <span>Analyze Content</span>
+                </button>
+                <button class="btn-secondary" onclick="clearAll()">
+                    <span>↺</span>
+                    <span>Clear</span>
+                </button>
+            </div>
+
+            <div id="loadingState" class="loading-state">
+                <div class="spinner"></div>
+                <p class="loading-text">Analyzing content with AI models...</p>
+            </div>
+
+            <div id="resultsContainer" class="results-container"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:8080/api/detect';
+        
+        window.addEventListener('load', checkAPIConnection);
+
+        async function checkAPIConnection() {
+            const statusBar = document.getElementById('statusBar');
+            try {
+                const response = await fetch(`${API_URL}/health`);
+                if (response.ok) {
+                    statusBar.className = 'status-bar status-connected';
+                    statusBar.innerHTML = `
+                        <div class="status-indicator">
+                            <div class="pulse-dot"></div>
+                            <span>System Online - Backend API Connected</span>
+                        </div>
+                    `;
+                } else {
+                    showAPIError();
+                }
+            } catch (error) {
+                showAPIError();
+            }
+        }
+
+        function showAPIError() {
+            const statusBar = document.getElementById('statusBar');
+            statusBar.className = 'status-bar status-disconnected';
+            statusBar.innerHTML = `
+                <div class="status-indicator">
+                    <div class="pulse-dot"></div>
+                    <span>System Offline - Backend API Not Connected</span>
+                </div>
+            `;
+        }
+
+        async function analyzeText() {
+            const text = document.getElementById('textInput').value.trim();
+            
+            if (!text) {
+                alert('Please enter text content to analyze');
+                return;
+            }
+
+            const resultsContainer = document.getElementById('resultsContainer');
+            const loadingState = document.getElementById('loadingState');
+            const analyzeBtn = document.getElementById('analyzeBtn');
+
+            resultsContainer.style.display = 'none';
+            loadingState.style.display = 'block';
+            analyzeBtn.disabled = true;
+
+            try {
+                const response = await fetch(`${API_URL}/analyze`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ text: text })
+                });
+
+                if (!response.ok) {
+                    throw new Error('API request failed');
+                }
+
+                const data = await response.json();
+                displayResults(data);
+
+            } catch (error) {
+                console.error('Error:', error);
+                resultsContainer.innerHTML = `
+                    <div class="error-card">
+                        <strong>Connection Error</strong>
+                        Unable to connect to the backend API. Please ensure the Java Spring Boot server is running on port 8080.
+                    </div>
+                `;
+                resultsContainer.style.display = 'block';
+            } finally {
+                loadingState.style.display = 'none';
+                analyzeBtn.disabled = false;
+            }
+        }
+
+        function displayResults(data) {
+            const resultsContainer = document.getElementById('resultsContainer');
+            
+            let statusIcon, statusText, statusClass, statusSubtitle;
+            
+            switch(data.severityLevel) {
+                case 'SAFE':
+                    statusIcon = '✓';
+                    statusText = 'Content Approved';
+                    statusSubtitle = 'No safety concerns detected';
+                    statusClass = 'result-safe';
+                    break;
+                case 'WARNING':
+                    statusIcon = '⚠';
+                    statusText = 'Review Required';
+                    statusSubtitle = 'Potentially inappropriate content detected';
+                    statusClass = 'result-warning';
+                    break;
+                case 'DANGER':
+                    statusIcon = '✕';
+                    statusText = 'Content Flagged';
+                    statusSubtitle = 'Abusive or harmful content detected';
+                    statusClass = 'result-danger';
+                    break;
+            }
+
+            let aiAnalysisHtml = '';
+            if (data.aiAnalysis && data.aiAnalysis.ai_enabled) {
+                const categories = data.aiAnalysis.categories || [];
+                const categoriesHtml = categories.length > 0 
+                    ? `<div class="category-chips">
+                        ${categories.map(cat => `<span class="chip">${cat}</span>`).join('')}
+                       </div>`
+                    : '';
+                
+                aiAnalysisHtml = `
+                    <div class="ai-section">
+                        <h3>
+                            <span>🤖</span>
+                            <span>AI Deep Analysis</span>
+                        </h3>
+                        <div class="ai-explanation">${data.aiAnalysis.explanation}</div>
+                        <div class="metrics-grid">
+                            <div class="metric-item">
+                                <div class="metric-label">Toxicity Score</div>
+                                <div class="metric-value">${data.aiAnalysis.toxicity_score}/100</div>
+                            </div>
+                            <div class="metric-item">
+                                <div class="metric-label">AI Confidence</div>
+                                <div class="metric-value">${data.aiAnalysis.confidence}%</div>
+                            </div>
+                        </div>
+                        ${categoriesHtml}
+                    </div>
+                `;
+            }
+
+            let flaggedHtml = '';
+            if (data.flaggedWords && data.flaggedWords.length > 0) {
+                flaggedHtml = `
+                    <div class="flagged-section">
+                        <h3>Flagged Content</h3>
+                        ${data.flaggedWords.map(item => 
+                            `<span class="word-chip">${item.word}<span style="opacity: 0.6;">·${item.severity}</span></span>`
+                        ).join('')}
+                    </div>
+                `;
+            }
+
+            resultsContainer.innerHTML = `
+                <div class="result-card ${statusClass}">
+                    <div class="result-header">
+                        <div class="result-icon">${statusIcon}</div>
+                        <div class="result-title">
+                            <h2>${statusText}</h2>
+                            <p class="result-subtitle">${statusSubtitle}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="metrics-grid">
+                        <div class="metric-item">
+                            <div class="metric-label">Severity Level</div>
+                            <div class="metric-value">${data.severityLevel}</div>
+                        </div>
+                        <div class="metric-item">
+                            <div class="metric-label">Risk Score</div>
+                            <div class="metric-value">${data.abuseScore}/15</div>
+                        </div>
+                        <div class="metric-item">
+                            <div class="metric-label">Detection Confidence</div>
+                            <div class="metric-value">${data.confidence}%</div>
+                        </div>
+                    </div>
+
+                    ${aiAnalysisHtml}
+                    ${flaggedHtml}
+                </div>
+
+                <div class="stats-row">
+                    <div class="stat-box">
+                        <div class="stat-value">${data.totalWords}</div>
+                        <div class="stat-label">Total Words</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-value">${data.flaggedWords ? data.flaggedWords.length : 0}</div>
+                        <div class="stat-label">Flagged Items</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-value">${data.characterCount}</div>
+                        <div class="stat-label">Characters</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-value">${data.aiAnalysis && data.aiAnalysis.ai_enabled ? '✓' : '–'}</div>
+                        <div class="stat-label">AI Analysis</div>
+                    </div>
+                </div>
+            `;
+
+            resultsContainer.style.display = 'block';
+        }
+
+        function clearAll() {
+            document.getElementById('textInput').value = '';
+            document.getElementById('resultsContainer').style.display = 'none';
+        }
+    </script>
+</body>
+</html>
